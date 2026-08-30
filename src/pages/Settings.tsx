@@ -8,57 +8,55 @@ const FAILURE_MESSAGES: Record<Exclude<ValidationResult, { ok: true }>['reason']
   network: 'Could not reach OMDb. Check your internet connection and try again.',
 };
 
-const LANGUAGES = [
-  'Any',
-  'English',
-  'Hindi',
-  'Tamil',
-  'Telugu',
-  'Malayalam',
-  'Kannada',
-  'Bengali',
-  'Marathi',
-  'Korean',
-  'Japanese',
-  'Chinese',
-  'French',
-  'Spanish',
-  'German',
-  'Italian',
-  'Russian',
-  'Arabic',
-  'Turkish',
-  'Thai',
-  'Vietnamese',
-  'Indonesian',
-  'Portuguese',
-  'Dutch',
-  'Polish',
+export const LANGUAGES: { label: string; code: string }[] = [
+  { label: 'English', code: 'en' },
+  { label: 'Hindi', code: 'hi' },
+  { label: 'Tamil', code: 'ta' },
+  { label: 'Telugu', code: 'te' },
+  { label: 'Malayalam', code: 'ml' },
+  { label: 'Kannada', code: 'kn' },
+  { label: 'Bengali', code: 'bn' },
+  { label: 'Marathi', code: 'mr' },
+  { label: 'Korean', code: 'ko' },
+  { label: 'Japanese', code: 'ja' },
+  { label: 'Chinese', code: 'zh' },
+  { label: 'French', code: 'fr' },
+  { label: 'Spanish', code: 'es' },
+  { label: 'German', code: 'de' },
+  { label: 'Italian', code: 'it' },
+  { label: 'Russian', code: 'ru' },
+  { label: 'Arabic', code: 'ar' },
+  { label: 'Turkish', code: 'tr' },
+  { label: 'Thai', code: 'th' },
+  { label: 'Vietnamese', code: 'vi' },
+  { label: 'Indonesian', code: 'id' },
+  { label: 'Portuguese', code: 'pt' },
+  { label: 'Dutch', code: 'nl' },
+  { label: 'Polish', code: 'pl' },
 ];
 
-const REGIONS = [
-  'Any',
-  'United States',
-  'India',
-  'United Kingdom',
-  'South Korea',
-  'Japan',
-  'China',
-  'France',
-  'Spain',
-  'Germany',
-  'Italy',
-  'Russia',
-  'United Arab Emirates',
-  'Turkey',
-  'Thailand',
-  'Vietnam',
-  'Indonesia',
-  'Brazil',
-  'Netherlands',
-  'Poland',
-  'Canada',
-  'Australia',
+export const REGIONS: { label: string; code: string }[] = [
+  { label: 'United States', code: 'US' },
+  { label: 'India', code: 'IN' },
+  { label: 'United Kingdom', code: 'GB' },
+  { label: 'South Korea', code: 'KR' },
+  { label: 'Japan', code: 'JP' },
+  { label: 'China', code: 'CN' },
+  { label: 'France', code: 'FR' },
+  { label: 'Spain', code: 'ES' },
+  { label: 'Germany', code: 'DE' },
+  { label: 'Italy', code: 'IT' },
+  { label: 'Russia', code: 'RU' },
+  { label: 'United Arab Emirates', code: 'AE' },
+  { label: 'Turkey', code: 'TR' },
+  { label: 'Thailand', code: 'TH' },
+  { label: 'Vietnam', code: 'VN' },
+  { label: 'Indonesia', code: 'ID' },
+  { label: 'Brazil', code: 'BR' },
+  { label: 'Netherlands', code: 'NL' },
+  { label: 'Poland', code: 'PL' },
+  { label: 'Canada', code: 'CA' },
+  { label: 'Australia', code: 'AU' },
 ];
 
 type KeyStatus = 'idle' | 'testing' | 'ok' | 'bad';
@@ -66,8 +64,9 @@ type KeyStatus = 'idle' | 'testing' | 'ok' | 'bad';
 export default function Settings() {
   const { settings, updateSettings } = useApp();
   const [key, setKey] = useState(settings.omdbApiKey);
-  const [language, setLanguage] = useState(settings.preferredLanguage || 'Any');
-  const [region, setRegion] = useState(settings.region || 'Any');
+  const [tmdbKey, setTmdbKey] = useState(settings.tmdbApiKey);
+  const [language, setLanguage] = useState(settings.preferredLanguage || '');
+  const [region, setRegion] = useState(settings.region || '');
   const [showKey, setShowKey] = useState(false);
   const [status, setStatus] = useState<KeyStatus>('idle');
   const [message, setMessage] = useState('');
@@ -77,8 +76,9 @@ export default function Settings() {
     e.preventDefault();
     updateSettings({
       omdbApiKey: key.trim(),
-      preferredLanguage: language === 'Any' ? '' : language,
-      region: region === 'Any' ? '' : region,
+      tmdbApiKey: tmdbKey.trim(),
+      preferredLanguage: language,
+      region: region,
     });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -142,14 +142,37 @@ export default function Settings() {
         </label>
 
         <label className="field">
+          <span>TMDB API Key</span>
+          <div className="key-row">
+            <input
+              type={showKey ? 'text' : 'password'}
+              value={tmdbKey}
+              onChange={(e) => setTmdbKey(e.target.value)}
+              placeholder="Paste your TMDB API key (v3 auth key)"
+              autoComplete="off"
+            />
+            <button
+              type="button"
+              className="btn small"
+              onClick={() => setShowKey((v) => !v)}
+              title={showKey ? 'Hide' : 'Show'}
+            >
+              {showKey ? 'Hide' : 'Show'}
+            </button>
+          </div>
+          <span className="muted">Powers the home-page suggestions filtered by language &amp; region. Get one at themoviedb.org.</span>
+        </label>
+
+        <label className="field">
           <span>Preferred language</span>
           <select
             className="search-input"
             value={language}
             onChange={(e) => setLanguage(e.target.value)}
           >
+            <option value="">Any</option>
             {LANGUAGES.map((l) => (
-              <option key={l} value={l}>{l}</option>
+              <option key={l.code} value={l.code}>{l.label}</option>
             ))}
           </select>
           <span className="muted">Used to suggest movies in the languages you watch.</span>
@@ -162,8 +185,9 @@ export default function Settings() {
             value={region}
             onChange={(e) => setRegion(e.target.value)}
           >
+            <option value="">Any</option>
             {REGIONS.map((r) => (
-              <option key={r} value={r}>{r}</option>
+              <option key={r.code} value={r.code}>{r.label}</option>
             ))}
           </select>
           <span className="muted">Used together with language to tailor suggestions.</span>

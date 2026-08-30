@@ -1,5 +1,6 @@
 export interface Settings {
   omdbApiKey: string;
+  tmdbApiKey: string;
   preferredLanguage: string;
   region: string;
 }

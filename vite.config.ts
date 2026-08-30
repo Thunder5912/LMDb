@@ -54,6 +54,18 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/omdb/, ''),
       },
       '/api/img': imgProxy(),
+      '/tmdb': {
+        target: 'https://api.themoviedb.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/tmdb/, ''),
+      },
+      '/api/tmdb': {
+        target: 'https://api.themoviedb.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/tmdb/, ''),
+      },
     },
   },
   preview: {
@@ -73,6 +85,18 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/api\/omdb/, ''),
       },
       '/api/img': imgProxy(),
+      '/tmdb': {
+        target: 'https://api.themoviedb.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/tmdb/, ''),
+      },
+      '/api/tmdb': {
+        target: 'https://api.themoviedb.org',
+        changeOrigin: true,
+        secure: true,
+        rewrite: (path) => path.replace(/^\/api\/tmdb/, ''),
+      },
     },
   },
 });

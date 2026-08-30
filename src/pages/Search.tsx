@@ -1,8 +1,45 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import MovieCard from '../components/MovieCard';
-import { searchMovies, TmdbMovie } from '../lib/api';
+import { searchMovies, fetchHomeSuggestions, TmdbMovie } from '../lib/api';
 import { useApp } from '../context/AppContext';
+import { LANGUAGES, REGIONS } from './Settings';
+
+const HOME_CACHE_KEY = 'lmdb-home-suggestions';
+const ONE_DAY = 24 * 60 * 60 * 1000;
+
+interface CachedHome {
+  key: string;
+  ts: number;
+  recently: TmdbMovie[];
+  upcoming: TmdbMovie[];
+}
+
+function loadHomeCache(lang: string, region: string): CachedHome | null {
+  try {
+    const raw = localStorage.getItem(HOME_CACHE_KEY);
+    if (!raw) return null;
+    const c = JSON.parse(raw) as CachedHome;
+    if (c.key === `${lang}|${region}` && Date.now() - c.ts < ONE_DAY) return c;
+  } catch {
+    /* ignore */
+  }
+  return null;
+}
+
+function saveHomeCache(lang: string, region: string, recently: TmdbMovie[], upcoming: TmdbMovie[]) {
+  try {
+    localStorage.setItem(
+      HOME_CACHE_KEY,
+      JSON.stringify({ key: `${lang}|${region}`, ts: Date.now(), recently, upcoming })
+    );
+  } catch {
+    /* ignore */
+  }
+}
+
+const langLabel = (code: string) => LANGUAGES.find((l) => l.code === code)?.label || code;
+const regionLabel = (code: string) => REGIONS.find((r) => r.code === code)?.label || code;
 
 export default function Search() {
   const { settings } = useApp();
@@ -13,6 +50,7 @@ export default function Search() {
   const debounce = useRef<number | undefined>(undefined);
 
   const apiKey = settings.omdbApiKey;
+  const tmdbKey = settings.tmdbApiKey;
   const language = settings.preferredLanguage;
   const region = settings.region;
 
@@ -45,7 +83,7 @@ export default function Search() {
 
   useEffect(() => () => window.clearTimeout(debounce.current), []);
 
-  const showSuggestions = !!apiKey && !!language && !query;
+  const showSuggestions = !!tmdbKey && !!language && !query;
 
   useEffect(() => {
     if (!showSuggestions) {
@@ -53,21 +91,26 @@ export default function Search() {
       setUpcoming([]);
       return;
     }
+    const cached = loadHomeCache(language, region);
+    if (cached) {
+      setRecently(cached.recently);
+      setUpcoming(cached.upcoming);
+      setSuggLoading(false);
+      setSuggError('');
+      return;
+    }
     let cancelled = false;
     setSuggLoading(true);
     setSuggError('');
-    const year = new Date().getFullYear();
-    Promise.all([
-      searchMovies(language, 1, { year }).catch(() => ({ results: [] as TmdbMovie[] })),
-      searchMovies(language, 1, { year: year + 1 }).catch(() => ({ results: [] as TmdbMovie[] })),
-    ])
-      .then(([rec, up]) => {
+    fetchHomeSuggestions(language, region)
+      .then((data) => {
         if (cancelled) return;
-        setRecently(rec.results);
-        setUpcoming(up.results);
+        setRecently(data.recently);
+        setUpcoming(data.upcoming);
+        saveHomeCache(language, region, data.recently, data.upcoming);
       })
-      .catch(() => {
-        if (!cancelled) setSuggError('Could not load suggestions.');
+      .catch((e: Error) => {
+        if (!cancelled) setSuggError(e.message);
       })
       .finally(() => {
         if (!cancelled) setSuggLoading(false);
@@ -75,7 +118,7 @@ export default function Search() {
     return () => {
       cancelled = true;
     };
-  }, [showSuggestions, language, apiKey]);
+  }, [showSuggestions, language, region, tmdbKey]);
 
   return (
     <div className="page">
@@ -92,12 +135,12 @@ export default function Search() {
 
       {!query && (
         <section className="suggestions">
-          {!apiKey && (
+          {!tmdbKey && (
             <p className="muted">
-              Add your OMDb API key in <Link to="/settings">Settings</Link> to search and get suggestions.
+              Add your TMDB API key in <Link to="/settings">Settings</Link> to see tailored suggestions.
             </p>
           )}
-          {apiKey && !language && (
+          {tmdbKey && !language && (
             <p className="muted">
               Pick a preferred language in <Link to="/settings">Settings</Link> to see tailored suggestions.
             </p>
@@ -108,8 +151,8 @@ export default function Search() {
           {showSuggestions && (
             <>
               <h2>
-                Recently released{region ? ` · ${region}` : ''}
-                {language ? ` · ${language}` : ''}
+                Recently released{region ? ` · ${regionLabel(region)}` : ''}
+                {language ? ` · ${langLabel(language)}` : ''}
               </h2>
               <div className="grid">
                 {recently.map((m) => (
@@ -129,8 +172,8 @@ export default function Search() {
               )}
 
               <h2>
-                Upcoming{region ? ` · ${region}` : ''}
-                {language ? ` · ${language}` : ''}
+                Upcoming{region ? ` · ${regionLabel(region)}` : ''}
+                {language ? ` · ${langLabel(language)}` : ''}
               </h2>
               <div className="grid">
                 {upcoming.map((m) => (
@@ -147,6 +190,9 @@ export default function Search() {
               </div>
               {upcoming.length === 0 && !suggLoading && (
                 <p className="muted">No upcoming titles found for this language yet.</p>
+              )}
+              {!suggLoading && (recently.length > 0 || upcoming.length > 0) && (
+                <p className="muted">Suggestions refresh once every 24 hours.</p>
               )}
             </>
           )}

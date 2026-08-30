@@ -7,6 +7,7 @@ export const defaultState: AppState = {
   version: STATE_VERSION,
   settings: {
     omdbApiKey: '',
+    tmdbApiKey: '',
     preferredLanguage: '',
     region: '',
   },

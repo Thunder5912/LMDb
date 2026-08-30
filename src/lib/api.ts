@@ -9,6 +9,7 @@ export type { TmdbMovie, TmdbListResult, TmdbCredits } from './types';
 // and lets html2canvas capture posters for sharing).
 const isDev = import.meta.env.DEV;
 const BASE = isDev ? '/omdb' : '/api/omdb';
+const TMDB_BASE = isDev ? '/tmdb' : '/api/tmdb';
 const IMG_PROXY = isDev ? '/img?u=' : '/api/img?u=';
 
 export type ValidationResult =
@@ -136,6 +137,78 @@ export async function getMovie(id: string): Promise<TmdbMovie> {
 export async function getCredits(id: string): Promise<TmdbCredits> {
   const movie = (await getMovie(id)) as TmdbMovie & { _credits?: TmdbCredits };
   return movie._credits || { cast: [], crew: [] };
+}
+
+export interface HomeSuggestions {
+  recently: TmdbMovie[];
+  upcoming: TmdbMovie[];
+}
+
+function mapTmdbMovie(item: any): TmdbMovie {
+  return {
+    id: String(item.id),
+    title: item.title || item.original_title || 'Unknown',
+    original_title: item.original_title || item.title || '',
+    overview: item.overview || '',
+    poster_path: item.poster_path ? `https://image.tmdb.org/t/p/w500${item.poster_path}` : null,
+    backdrop_path: null,
+    release_date: item.release_date || '',
+    vote_average: item.vote_average || 0,
+    genre_ids: item.genre_ids || [],
+    genres: [],
+  };
+}
+
+export async function fetchHomeSuggestions(
+  languageCode: string,
+  regionCode: string
+): Promise<HomeSuggestions> {
+  const key = loadState().settings.tmdbApiKey;
+  if (!key) throw new Error('Add a TMDB API key in Settings to load suggestions.');
+
+  const today = new Date().toISOString().slice(0, 10);
+
+  const buildUrl = (params: Record<string, string>) => {
+    const url = new URL(TMDB_BASE, window.location.origin);
+    url.searchParams.set('api_key', key);
+    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    return url.toString();
+  };
+
+  const recentlyUrl = buildUrl({
+    sort_by: 'primary_release_date.desc',
+    'primary_release_date.lte': today,
+    with_original_language: languageCode,
+    ...(regionCode ? { region: regionCode } : {}),
+    page: '1',
+  });
+
+  const upcomingUrl = buildUrl({
+    sort_by: 'primary_release_date.asc',
+    'primary_release_date.gte': today,
+    with_original_language: languageCode,
+    ...(regionCode ? { region: regionCode } : {}),
+    page: '1',
+  });
+
+  const [recentlyRes, upcomingRes] = await Promise.all([
+    fetch(recentlyUrl),
+    fetch(upcomingUrl),
+  ]);
+  const recentlyData = await recentlyRes.json();
+  const upcomingData = await upcomingRes.json();
+
+  if (recentlyData.success === false) {
+    throw new Error(recentlyData.status_message || 'TMDB request failed.');
+  }
+  if (upcomingData.success === false) {
+    throw new Error(upcomingData.status_message || 'TMDB request failed.');
+  }
+
+  return {
+    recently: (recentlyData.results || []).map(mapTmdbMovie),
+    upcoming: (upcomingData.results || []).map(mapTmdbMovie),
+  };
 }
 
 export function posterUrl(path: string | null, _size: 'w200' | 'w300' | 'w500' | 'original' = 'w500'): string {
