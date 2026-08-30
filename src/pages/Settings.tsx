@@ -142,13 +142,13 @@ export default function Settings() {
         </label>
 
         <label className="field">
-          <span>TMDB API Key</span>
+          <span>TMDB API Key or Read Access Token</span>
           <div className="key-row">
             <input
               type={showKey ? 'text' : 'password'}
               value={tmdbKey}
               onChange={(e) => setTmdbKey(e.target.value)}
-              placeholder="Paste your TMDB API key (v3 auth key)"
+              placeholder="TMDB v3 API key or v4 read access token"
               autoComplete="off"
             />
             <button
@@ -160,7 +160,7 @@ export default function Settings() {
               {showKey ? 'Hide' : 'Show'}
             </button>
           </div>
-          <span className="muted">Powers the home-page suggestions filtered by language &amp; region. Get one at themoviedb.org.</span>
+          <span className="muted">Powers the home-page suggestions filtered by language &amp; region. Use either a v3 API key or a v4 read access token from themoviedb.org.</span>
         </label>
 
         <label className="field">

@@ -164,16 +164,23 @@ export async function fetchHomeSuggestions(
   regionCode: string
 ): Promise<HomeSuggestions> {
   const key = loadState().settings.tmdbApiKey;
-  if (!key) throw new Error('Add a TMDB API key in Settings to load suggestions.');
+  if (!key) throw new Error('Add a TMDB API key or read access token in Settings to load suggestions.');
+
+  // v4 read access tokens are JWT-shaped (three dot-separated segments); v3 API
+  // keys are passed as the `api_key` query param.
+  const isBearer = key.split('.').length === 3;
 
   const today = new Date().toISOString().slice(0, 10);
 
   const buildUrl = (params: Record<string, string>) => {
     const url = new URL(TMDB_BASE, window.location.origin);
-    url.searchParams.set('api_key', key);
+    if (!isBearer) url.searchParams.set('api_key', key);
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
     return url.toString();
   };
+
+  const headers: Record<string, string> = {};
+  if (isBearer) headers.Authorization = `Bearer ${key}`;
 
   const recentlyUrl = buildUrl({
     sort_by: 'primary_release_date.desc',
@@ -192,8 +199,8 @@ export async function fetchHomeSuggestions(
   });
 
   const [recentlyRes, upcomingRes] = await Promise.all([
-    fetch(recentlyUrl),
-    fetch(upcomingUrl),
+    fetch(recentlyUrl, { headers }),
+    fetch(upcomingUrl, { headers }),
   ]);
   const recentlyData = await recentlyRes.json();
   const upcomingData = await upcomingRes.json();
