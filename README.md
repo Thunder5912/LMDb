@@ -1,6 +1,6 @@
-# Entire LMDB
+# LMdb
 
-A lightweight, Letterboxd-style movie tracking web app. Search films, log reviews,
+A personal Diary. Search films, log reviews,
 build a watchlist and custom lists, and share your reviews as images. All your
 data is stored **locally in your browser** (localStorage) — nothing is sent to a
 backend except the movie metadata requests to [OMDb](https://www.omdbapi.com).

@@ -30,25 +30,46 @@ export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const hasKey = !!settings.omdbApiKey;
   const { theme, toggle } = useTheme();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location]);
 
   return (
     <div className="app-shell">
       <header className="topbar">
         <NavLink to="/search" className="brand">
           <span className="brand-mark">L</span>
-          <span className="brand-name">Entire LMDB</span>
+          <span className="brand-name">LMdb</span>
         </NavLink>
-        <nav className="nav">
-          {links.map((l) => (
-            <NavLink
-              key={l.to}
-              to={l.to}
-              className={({ isActive }) => 'nav-link' + (isActive ? ' active' : '')}
-            >
-              {l.label}
-            </NavLink>
-          ))}
-        </nav>
+
+        <div className="menu">
+          <button
+            type="button"
+            className="btn small menu-toggle"
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-haspopup="menu"
+            aria-expanded={menuOpen}
+          >
+            Menu
+          </button>
+          {menuOpen && (
+            <div className="menu-dropdown" role="menu">
+              {links.map((l) => (
+                <NavLink
+                  key={l.to}
+                  to={l.to}
+                  role="menuitem"
+                  className={({ isActive }) => 'menu-item' + (isActive ? ' active' : '')}
+                >
+                  {l.label}
+                </NavLink>
+              ))}
+            </div>
+          )}
+        </div>
+
         <button
           type="button"
           className="btn small theme-toggle"
@@ -69,7 +90,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <main className="content">{children}</main>
 
       <footer className="footer">
-        <span>Lmdb Review</span>
+        <span>LMdb</span>
         <span className="footer-note">Your data is stored only in this browser.</span>
       </footer>
     </div>

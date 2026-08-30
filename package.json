@@ -1,9 +1,9 @@
 {
-  "name": "lmdb-review",
+  "name": "lmdb",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Lmdb Review - a Letterboxd-style movie tracking web app powered by TMDB, with all data stored locally in your browser.",
+  "description": "A personal Diary",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
