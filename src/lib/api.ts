@@ -92,13 +92,18 @@ function proxied(path: string | null): string {
   return path;
 }
 
-export async function searchMovies(query: string, page = 1): Promise<TmdbListResult> {
+export async function searchMovies(
+  query: string,
+  page = 1,
+  opts?: { year?: string | number }
+): Promise<TmdbListResult> {
   const key = getKey();
   const url = new URL(BASE, window.location.origin);
   url.searchParams.set('apikey', key);
   url.searchParams.set('s', query);
   url.searchParams.set('page', String(page));
   url.searchParams.set('type', 'movie');
+  if (opts?.year) url.searchParams.set('y', String(opts.year));
   const res = await fetch(url.toString());
   const data = await res.json();
   if (data.Response !== 'True') {

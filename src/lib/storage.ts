@@ -7,6 +7,8 @@ export const defaultState: AppState = {
   version: STATE_VERSION,
   settings: {
     omdbApiKey: '',
+    preferredLanguage: '',
+    region: '',
   },
   reviews: [],
   watchlist: [],

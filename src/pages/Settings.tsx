@@ -8,11 +8,66 @@ const FAILURE_MESSAGES: Record<Exclude<ValidationResult, { ok: true }>['reason']
   network: 'Could not reach OMDb. Check your internet connection and try again.',
 };
 
+const LANGUAGES = [
+  'Any',
+  'English',
+  'Hindi',
+  'Tamil',
+  'Telugu',
+  'Malayalam',
+  'Kannada',
+  'Bengali',
+  'Marathi',
+  'Korean',
+  'Japanese',
+  'Chinese',
+  'French',
+  'Spanish',
+  'German',
+  'Italian',
+  'Russian',
+  'Arabic',
+  'Turkish',
+  'Thai',
+  'Vietnamese',
+  'Indonesian',
+  'Portuguese',
+  'Dutch',
+  'Polish',
+];
+
+const REGIONS = [
+  'Any',
+  'United States',
+  'India',
+  'United Kingdom',
+  'South Korea',
+  'Japan',
+  'China',
+  'France',
+  'Spain',
+  'Germany',
+  'Italy',
+  'Russia',
+  'United Arab Emirates',
+  'Turkey',
+  'Thailand',
+  'Vietnam',
+  'Indonesia',
+  'Brazil',
+  'Netherlands',
+  'Poland',
+  'Canada',
+  'Australia',
+];
+
 type KeyStatus = 'idle' | 'testing' | 'ok' | 'bad';
 
 export default function Settings() {
   const { settings, updateSettings } = useApp();
   const [key, setKey] = useState(settings.omdbApiKey);
+  const [language, setLanguage] = useState(settings.preferredLanguage || 'Any');
+  const [region, setRegion] = useState(settings.region || 'Any');
   const [showKey, setShowKey] = useState(false);
   const [status, setStatus] = useState<KeyStatus>('idle');
   const [message, setMessage] = useState('');
@@ -20,7 +75,11 @@ export default function Settings() {
 
   function save(e: FormEvent) {
     e.preventDefault();
-    updateSettings({ omdbApiKey: key.trim() });
+    updateSettings({
+      omdbApiKey: key.trim(),
+      preferredLanguage: language === 'Any' ? '' : language,
+      region: region === 'Any' ? '' : region,
+    });
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
   }
@@ -80,6 +139,34 @@ export default function Settings() {
           {status === 'ok' && <span className="ok">Key works ✓</span>}
           {status === 'bad' && <span className="err">Key invalid ✗</span>}
           {message && <span className={status === 'ok' ? 'ok' : 'err'}>{message}</span>}
+        </label>
+
+        <label className="field">
+          <span>Preferred language</span>
+          <select
+            className="search-input"
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+          >
+            {LANGUAGES.map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+          <span className="muted">Used to suggest movies in the languages you watch.</span>
+        </label>
+
+        <label className="field">
+          <span>Region</span>
+          <select
+            className="search-input"
+            value={region}
+            onChange={(e) => setRegion(e.target.value)}
+          >
+            {REGIONS.map((r) => (
+              <option key={r} value={r}>{r}</option>
+            ))}
+          </select>
+          <span className="muted">Used together with language to tailor suggestions.</span>
         </label>
 
         <button type="submit" className="btn primary">Save settings</button>

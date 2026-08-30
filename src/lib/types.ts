@@ -1,5 +1,7 @@
 export interface Settings {
   omdbApiKey: string;
+  preferredLanguage: string;
+  region: string;
 }
 
 export interface Review {

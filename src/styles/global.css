@@ -145,6 +145,8 @@ h3 { font-size: 15px; margin: 0 0 8px; }
   color: #6b5300;
 }
 
+.suggestions { margin-top: 18px; }
+
 .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
 
 .search-input {
