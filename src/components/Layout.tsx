@@ -30,11 +30,6 @@ export default function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const hasKey = !!settings.omdbApiKey;
   const { theme, toggle } = useTheme();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [location]);
 
   return (
     <div className="app-shell">
@@ -43,32 +38,6 @@ export default function Layout({ children }: { children: ReactNode }) {
           <span className="brand-mark">L</span>
           <span className="brand-name">LMdb</span>
         </NavLink>
-
-        <div className="menu">
-          <button
-            type="button"
-            className="btn small menu-toggle"
-            onClick={() => setMenuOpen((o) => !o)}
-            aria-haspopup="menu"
-            aria-expanded={menuOpen}
-          >
-            Menu
-          </button>
-          {menuOpen && (
-            <div className="menu-dropdown" role="menu">
-              {links.map((l) => (
-                <NavLink
-                  key={l.to}
-                  to={l.to}
-                  role="menuitem"
-                  className={({ isActive }) => 'menu-item' + (isActive ? ' active' : '')}
-                >
-                  {l.label}
-                </NavLink>
-              ))}
-            </div>
-          )}
-        </div>
 
         <button
           type="button"
@@ -80,6 +49,18 @@ export default function Layout({ children }: { children: ReactNode }) {
           {theme === 'dark' ? '☾' : '☀'}
         </button>
       </header>
+
+      <nav className="floating-menu" aria-label="Main menu">
+        {links.map((l) => (
+          <NavLink
+            key={l.to}
+            to={l.to}
+            className={({ isActive }) => 'floating-item' + (isActive ? ' active' : '')}
+          >
+            {l.label}
+          </NavLink>
+        ))}
+      </nav>
 
       {!hasKey && location.pathname !== '/settings' && (
         <div className="api-warning">
