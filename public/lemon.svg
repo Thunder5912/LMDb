@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <radialGradient id="lemonBody" cx="38%" cy="34%" r="78%">
+      <stop offset="0%" stop-color="#fff484"/>
+      <stop offset="55%" stop-color="#ffd23f"/>
+      <stop offset="100%" stop-color="#e3a800"/>
+    </radialGradient>
+  </defs>
+  <path d="M13 41 C9 26 22 11 37 13 C53 15 57 30 50 45 C43 58 23 55 13 41 Z"
+        fill="url(#lemonBody)" stroke="#b98600" stroke-width="1.6"/>
+  <path d="M39 15 C45 4 58 4 61 11 C55 18 46 19 39 15 Z"
+        fill="#5cb85c" stroke="#3f9e3f" stroke-width="1.2"/>
+  <ellipse cx="25" cy="27" rx="6" ry="3.6" fill="#fff7b0" opacity="0.65"/>
+  <circle cx="52" cy="44" r="1.6" fill="#c79100" opacity="0.7"/>
+</svg>

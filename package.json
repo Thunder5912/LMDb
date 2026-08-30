@@ -1,0 +1,26 @@
+{
+  "name": "lmdb-review",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Lmdb Review - a Letterboxd-style movie tracking web app powered by TMDB, with all data stored locally in your browser.",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.26.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.5",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "typescript": "^5.5.4",
+    "vite": "^5.4.8"
+  }
+}
